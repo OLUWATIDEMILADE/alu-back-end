@@ -1,59 +1,31 @@
-
-n script that returns TODO list progress for a given employee ID
+#!/usr/bin/python3
 """
-import csv
+    python script that returns TODO list progress for a given employee ID
+"""
 import json
 import requests
 from sys import argv
 
 
-"""
-    Define HTTP headers for the API requests
-"""
-headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-}
-
-"""
-    Define the header for the CSV file
-"""
-
 if __name__ == "__main__":
-    """Get the user ID from the command-line argument"""
-    user_id = argv[1]
-    """
-        Step 1: Retrieve user information from the JSONPlaceholder API.
-    """
+    """ Functions for gathering  data from an API """
     request_employee = requests.get(
-        f'https://jsonplaceholder.typicode.com/users/{user_id}')
+        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
     employee = json.loads(request_employee.text)
     employee_name = employee.get("name")
-    userName = employee.get("username")
-
-    """
-        Step 2: Retrieve the user's tasks from the API.
-        """
     request_todos = requests.get(
-        f'https://jsonplaceholder.typicode.com/users/{user_id}/todos')
+        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
     tasks = {}
     employee_todos = json.loads(request_todos.text)
 
-    """
-        Step 3: Create a list of tasks.
-    """
     for dictionary in employee_todos:
         tasks.update({dictionary.get("title"): dictionary.get("completed")})
 
-    """
-        Step 4: Generate the CSV filename based on the user's ID.
-    """
-    USER_ID = user_id
-
-    """
-        Create and write the data to a CSV file.
-    """
-    with open(f'{USER_ID}.csv', 'w', encoding="UTF8", newline='') as user:
-        writer = csv.writer(user, delimiter=',', quoting=csv.QUOTE_ALL)
-        for k, v in tasks.items():
-            writer.writerow([USER_ID, userName, v, k])
+    EMPLOYEE_NAME = employee_name
+    TOTAL_NUMBER_OF_TASKS = len(tasks)
+    NUMBER_OF_DONE_TASKS = len([k for k, v in tasks.items() if v is True])
+    print("Employee {} is done with tasks({}/{}):".format(
+        EMPLOYEE_NAME, NUMBER_OF_DONE_TASKS, TOTAL_NUMBER_OF_TASKS))
+    for k, v in tasks.items():
+        if v is True:
+            print("\t {}".format(k))
